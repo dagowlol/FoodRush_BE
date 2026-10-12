@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: foodrush-be
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/foodrush?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&serverTimezone=UTC&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:1234}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  jwt:
+    # Leave empty to auto-generate an ephemeral dev secret (tokens are invalidated on restart).
+    secret: ${JWT_SECRET:}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  coupon:
+    expiry-days: ${COUPON_EXPIRY_DAYS:7}
+  timezone: Asia/Ho_Chi_Minh
+  seed:
+    enabled: ${SEED_ENABLED:true}
+    staff-username: ${SEED_STAFF_USERNAME:staff}
+    staff-email: ${SEED_STAFF_EMAIL:staff@fivestar.local}
+    # Leave empty to auto-generate a random staff password (written to staff-password-file, never logged).
+    staff-password: ${SEED_STAFF_PASSWORD:}
+    staff-display-name: ${SEED_STAFF_DISPLAY_NAME:Five Star Staff}
+    staff-password-file: ${SEED_STAFF_PASSWORD_FILE:staff-credentials.txt}
