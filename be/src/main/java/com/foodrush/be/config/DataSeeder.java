@@ -1,16 +1,13 @@
 package com.foodrush.be.config;
 
-import com.foodrush.be.entity.FoodItem;
 import com.foodrush.be.entity.User;
 import com.foodrush.be.entity.enums.Role;
-import com.foodrush.be.repository.FoodItemRepository;
 import com.foodrush.be.repository.UserRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -29,18 +26,6 @@ public class DataSeeder implements ApplicationRunner {
             "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
     private static final int GENERATED_PASSWORD_LENGTH = 16;
 
-    private static final List<FoodSeed> FOODS = List.of(
-            new FoodSeed("BURGER", "Burger", "\uD83C\uDF54", 1),
-            new FoodSeed("PIZZA", "Pizza", "\uD83C\uDF55", 1),
-            new FoodSeed("FRIED_CHICKEN", "Fried Chicken", "\uD83C\uDF57", 1),
-            new FoodSeed("FRENCH_FRIES", "French Fries", "\uD83C\uDF5F", 1),
-            new FoodSeed("ICE_CREAM", "Ice Cream", "\uD83C\uDF66", 1),
-            new FoodSeed("HOT_DOG", "Hot Dog", "\uD83C\uDF2D", 1),
-            new FoodSeed("SANDWICH", "Sandwich", "\uD83E\uDD6A", 1),
-            new FoodSeed("CHICKEN_RICE", "Chicken Rice", "\uD83C\uDF5A", 1),
-            new FoodSeed("PASTA", "Pasta", "\uD83C\uDF5D", 1));
-
-    private final FoodItemRepository foodItemRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppProperties appProperties;
@@ -50,23 +35,8 @@ public class DataSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        seedFoodItems();
         if (appProperties.getSeed().isEnabled()) {
             seedStaff();
-        }
-    }
-
-    private void seedFoodItems() {
-        for (FoodSeed food : FOODS) {
-            if (!foodItemRepository.existsByCode(food.code())) {
-                foodItemRepository.save(FoodItem.builder()
-                        .code(food.code())
-                        .name(food.name())
-                        .emoji(food.emoji())
-                        .basePoints(food.basePoints())
-                        .active(true)
-                        .build());
-            }
         }
     }
 
@@ -119,8 +89,5 @@ public class DataSeeder implements ApplicationRunner {
         } catch (IOException ex) {
             log.error("Failed to write staff credentials to '{}': {}", path, ex.getMessage());
         }
-    }
-
-    private record FoodSeed(String code, String name, String emoji, int basePoints) {
     }
 }

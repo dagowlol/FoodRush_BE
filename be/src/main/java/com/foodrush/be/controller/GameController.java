@@ -1,11 +1,9 @@
 package com.foodrush.be.controller;
 
 import com.foodrush.be.common.ApiResponse;
-import com.foodrush.be.dto.request.ServeOrderRequest;
-import com.foodrush.be.dto.response.FoodItemResponse;
-import com.foodrush.be.dto.response.OrderResponse;
+import com.foodrush.be.dto.request.FinishSessionRequest;
+import com.foodrush.be.dto.response.LeaderboardEntryResponse;
 import com.foodrush.be.dto.response.ScoreResponse;
-import com.foodrush.be.dto.response.ServeResultResponse;
 import com.foodrush.be.dto.response.SessionHistoryResponse;
 import com.foodrush.be.dto.response.SessionResponse;
 import com.foodrush.be.security.SecurityUtils;
@@ -32,13 +30,7 @@ public class GameController {
 
     private final GameService gameService;
 
-    @Operation(summary = "List all available food items")
-    @GetMapping("/foods")
-    public ResponseEntity<ApiResponse<List<FoodItemResponse>>> foods() {
-        return ResponseEntity.ok(ApiResponse.ok(gameService.listFoodItems()));
-    }
-
-    @Operation(summary = "Start a new game session")
+    @Operation(summary = "Start a new Food Defender game session")
     @PostMapping("/sessions")
     public ResponseEntity<ApiResponse<SessionResponse>> startSession() {
         SessionResponse response = gameService.startSession(SecurityUtils.currentUserId());
@@ -46,28 +38,26 @@ public class GameController {
                 .body(ApiResponse.ok("Game session started", response));
     }
 
-    @Operation(summary = "Get the next order (returns the current pending order if one exists)")
-    @GetMapping("/sessions/{sessionId}/next-order")
-    public ResponseEntity<ApiResponse<OrderResponse>> nextOrder(@PathVariable Long sessionId) {
-        OrderResponse response = gameService.getNextOrder(SecurityUtils.currentUserId(), sessionId);
+    @Operation(summary = "Get the current state of a game session")
+    @GetMapping("/sessions/{sessionId}")
+    public ResponseEntity<ApiResponse<SessionResponse>> getSession(@PathVariable Long sessionId) {
+        SessionResponse response = gameService.getSession(SecurityUtils.currentUserId(), sessionId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
-    @Operation(summary = "Serve an order and let the backend compute the score")
-    @PostMapping("/sessions/{sessionId}/orders/{orderId}/serve")
-    public ResponseEntity<ApiResponse<ServeResultResponse>> serve(
-            @PathVariable Long sessionId,
-            @PathVariable Long orderId,
-            @Valid @RequestBody ServeOrderRequest request) {
-        ServeResultResponse response = gameService.serveOrder(
-                SecurityUtils.currentUserId(), sessionId, orderId, request.servedItemIds());
-        return ResponseEntity.ok(ApiResponse.ok("Order served", response));
+    @Operation(summary = "Mark the food as CONTAMINATED (one-way, cannot return to SAFE)")
+    @PostMapping("/sessions/{sessionId}/food-safety/contaminate")
+    public ResponseEntity<ApiResponse<SessionResponse>> contaminate(@PathVariable Long sessionId) {
+        SessionResponse response = gameService.contaminateFood(SecurityUtils.currentUserId(), sessionId);
+        return ResponseEntity.ok(ApiResponse.ok("Food marked as contaminated", response));
     }
 
-    @Operation(summary = "Finish a game session")
+    @Operation(summary = "Finish a game session with the final run results")
     @PostMapping("/sessions/{sessionId}/finish")
-    public ResponseEntity<ApiResponse<SessionResponse>> finish(@PathVariable Long sessionId) {
-        SessionResponse response = gameService.finishSession(SecurityUtils.currentUserId(), sessionId);
+    public ResponseEntity<ApiResponse<SessionResponse>> finish(
+            @PathVariable Long sessionId,
+            @Valid @RequestBody(required = false) FinishSessionRequest request) {
+        SessionResponse response = gameService.finishSession(SecurityUtils.currentUserId(), sessionId, request);
         return ResponseEntity.ok(ApiResponse.ok("Game session finished", response));
     }
 
@@ -81,5 +71,11 @@ public class GameController {
     @GetMapping("/score")
     public ResponseEntity<ApiResponse<ScoreResponse>> score() {
         return ResponseEntity.ok(ApiResponse.ok(gameService.getScore(SecurityUtils.currentUserId())));
+    }
+
+    @Operation(summary = "Get the top players leaderboard")
+    @GetMapping("/leaderboard")
+    public ResponseEntity<ApiResponse<List<LeaderboardEntryResponse>>> leaderboard() {
+        return ResponseEntity.ok(ApiResponse.ok(gameService.getLeaderboard()));
     }
 }

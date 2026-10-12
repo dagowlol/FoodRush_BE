@@ -1,5 +1,6 @@
 package com.foodrush.be.entity;
 
+import com.foodrush.be.entity.enums.FoodSafetyStatus;
 import com.foodrush.be.entity.enums.SessionStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,8 +47,18 @@ public class GameSession extends BaseEntity {
     private int scoreEarned = 0;
 
     @Builder.Default
-    @Column(name = "orders_served", nullable = false)
-    private int ordersServed = 0;
+    @Column(name = "bugs_killed", nullable = false, columnDefinition = "int not null default 0")
+    private int bugsKilled = 0;
+
+    @Builder.Default
+    @Column(name = "waves_completed", nullable = false, columnDefinition = "int not null default 0")
+    private int wavesCompleted = 0;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "food_safety_status", nullable = false, length = 20,
+            columnDefinition = "varchar(20) not null default 'SAFE'")
+    private FoodSafetyStatus foodSafetyStatus = FoodSafetyStatus.SAFE;
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
