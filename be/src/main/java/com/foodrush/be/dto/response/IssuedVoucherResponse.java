@@ -14,7 +14,8 @@ public record IssuedVoucherResponse(
         LocalDate redemptionDate,
         Instant issuedAt,
         String status,
-        String usageInstructions) {
+        String usageInstructions,
+        Instant usedAt) {
 
     public static IssuedVoucherResponse from(IssuedVoucher issued) {
         return new IssuedVoucherResponse(
@@ -27,6 +28,7 @@ public record IssuedVoucherResponse(
                 issued.getRedemptionDate(),
                 issued.getIssuedAt(),
                 issued.getStatus().name(),
-                "Present this code at the Five Star store to redeem your voucher.");
+                "Present this code at the Five Star store to redeem your voucher.",
+                issued.getUsedAt());
     }
 }
