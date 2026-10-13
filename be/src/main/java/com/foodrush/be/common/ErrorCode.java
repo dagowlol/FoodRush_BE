@@ -17,12 +17,18 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found"),
     SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "Game session not found"),
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "Coupon not found"),
+    VOUCHER_NOT_FOUND(HttpStatus.NOT_FOUND, "Voucher not found"),
 
     USERNAME_TAKEN(HttpStatus.CONFLICT, "Username is already taken"),
     EMAIL_TAKEN(HttpStatus.CONFLICT, "Email is already registered"),
     SESSION_FINISHED(HttpStatus.CONFLICT, "The game session has already been finished"),
     COUPON_ALREADY_CLAIMED_TODAY(HttpStatus.CONFLICT, "You have already claimed a coupon today"),
     COUPON_ALREADY_REDEEMED(HttpStatus.CONFLICT, "This coupon has already been redeemed"),
+    INSUFFICIENT_COINS(HttpStatus.BAD_REQUEST, "You do not have enough coins for this voucher"),
+    VOUCHER_INACTIVE(HttpStatus.BAD_REQUEST, "This voucher is inactive"),
+    VOUCHER_OUT_OF_STOCK(HttpStatus.CONFLICT, "This voucher is out of stock"),
+    VOUCHER_REDEEMED_TODAY(HttpStatus.CONFLICT, "You have already redeemed a voucher today"),
+    INVALID_INVENTORY(HttpStatus.BAD_REQUEST, "Invalid inventory quantity"),
     COUPON_EXPIRED(HttpStatus.CONFLICT, "This coupon has expired"),
     DATA_CONFLICT(HttpStatus.CONFLICT, "The request conflicts with the current state of the data"),
 

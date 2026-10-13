@@ -8,11 +8,12 @@ import com.foodrush.be.dto.response.SessionHistoryResponse;
 import com.foodrush.be.dto.response.SessionResponse;
 import com.foodrush.be.entity.GameSession;
 import com.foodrush.be.entity.User;
-import com.foodrush.be.entity.enums.FoodSafetyStatus;
 import com.foodrush.be.entity.enums.SessionStatus;
+import com.foodrush.be.entity.enums.FoodSafetyStatus;
 import com.foodrush.be.exception.AppException;
 import com.foodrush.be.repository.GameSessionRepository;
 import com.foodrush.be.repository.UserRepository;
+import com.foodrush.be.service.CoinWalletService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class GameService {
 
     private final GameSessionRepository sessionRepository;
     private final UserRepository userRepository;
+    private final CoinWalletService coinWalletService;
 
     @Transactional
     public SessionResponse startSession(Long userId) {
@@ -72,13 +74,26 @@ public class GameService {
                 .orElseThrow(() -> new AppException(ErrorCode.SESSION_NOT_FOUND));
 
         if (session.getStatus() == SessionStatus.FINISHED) {
-            return SessionResponse.from(session);
+            long balance = userRepository.findById(userId).map(User::getCoinBalance).orElse(0L);
+            return new SessionResponse(
+                    session.getId(),
+                    session.getStatus(),
+                    session.getScoreEarned(),
+                    session.getBugsKilled(),
+                    session.getWavesCompleted(),
+                    session.getFoodSafetyStatus(),
+                    session.getStartedAt(),
+                    session.getFinishedAt(),
+                    0,
+                    balance);
         }
 
+        // Basic validation of submitted run result (prevents obviously bogus scores).
         if (request != null) {
-            session.setScoreEarned(request.score());
-            session.setBugsKilled(request.bugsKilled());
-            session.setWavesCompleted(request.wavesCompleted());
+            int submittedScore = Math.max(0, Math.min(request.score(), 10_000));
+            session.setScoreEarned(submittedScore);
+            session.setBugsKilled(Math.max(0, request.bugsKilled()));
+            session.setWavesCompleted(Math.max(0, request.wavesCompleted()));
         }
         session.setStatus(SessionStatus.FINISHED);
         session.setFinishedAt(Instant.now());
@@ -87,7 +102,25 @@ public class GameService {
         if (session.getScoreEarned() > 0) {
             userRepository.incrementScore(userId, session.getScoreEarned());
         }
-        return SessionResponse.from(session);
+
+        int coinsEarned = 0;
+        try {
+            coinsEarned = coinWalletService.awardForSession(userId, session.getId(), session.getScoreEarned());
+        } catch (Exception ignored) {
+            // Reward failure should not discard the finished session.
+        }
+        long balance = userRepository.findById(userId).map(User::getCoinBalance).orElse(0L);
+        return new SessionResponse(
+                session.getId(),
+                session.getStatus(),
+                session.getScoreEarned(),
+                session.getBugsKilled(),
+                session.getWavesCompleted(),
+                session.getFoodSafetyStatus(),
+                session.getStartedAt(),
+                session.getFinishedAt(),
+                coinsEarned,
+                balance);
     }
 
     @Transactional(readOnly = true)

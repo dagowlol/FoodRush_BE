@@ -48,6 +48,10 @@ public class User extends BaseEntity {
     @Column(name = "total_score", nullable = false)
     private long totalScore = 0L;
 
+    @Builder.Default
+    @Column(name = "coin_balance", nullable = false)
+    private long coinBalance = 0L;
+
     @Version
     @Column(nullable = false)
     private Long version;

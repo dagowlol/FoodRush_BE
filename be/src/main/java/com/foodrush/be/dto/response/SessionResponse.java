@@ -13,7 +13,9 @@ public record SessionResponse(
         int wavesCompleted,
         FoodSafetyStatus foodSafetyStatus,
         Instant startedAt,
-        Instant finishedAt) {
+        Instant finishedAt,
+        Integer coinsEarned,
+        Long coinBalance) {
 
     public static SessionResponse from(GameSession session) {
         return new SessionResponse(
@@ -24,6 +26,8 @@ public record SessionResponse(
                 session.getWavesCompleted(),
                 session.getFoodSafetyStatus(),
                 session.getStartedAt(),
-                session.getFinishedAt());
+                session.getFinishedAt(),
+                null,
+                null);
     }
 }

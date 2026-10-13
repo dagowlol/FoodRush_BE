@@ -9,7 +9,8 @@ public record UserResponse(
         String email,
         String displayName,
         Role role,
-        long totalScore) {
+        long totalScore,
+        long coinBalance) {
 
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -18,6 +19,7 @@ public record UserResponse(
                 user.getEmail(),
                 user.getDisplayName(),
                 user.getRole(),
-                user.getTotalScore());
+                user.getTotalScore(),
+                user.getCoinBalance());
     }
 }

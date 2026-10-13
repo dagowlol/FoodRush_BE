@@ -1,5 +1,6 @@
 package com.foodrush.be.auth.oauth;
 
+import com.foodrush.be.config.AppProperties;
 import com.foodrush.be.entity.User;
 import com.foodrush.be.entity.enums.Role;
 import com.foodrush.be.repository.UserRepository;
@@ -22,6 +23,7 @@ import org.springframework.util.StringUtils;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final AppProperties appProperties;
 
     @Override
     @Transactional
@@ -40,6 +42,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String finalEmail = email.toLowerCase();
         String finalName = StringUtils.hasText(name) ? name : email.split("@")[0];
 
+        boolean emailVerified = isEmailVerified(attributes);
+        boolean isAdminEmail = isAdminEmail(finalEmail);
+
         Optional<User> existing = userRepository.findByEmail(finalEmail);
         User user = existing.orElseGet(() -> {
             String baseUsername = finalEmail.split("@")[0];
@@ -53,10 +58,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .email(finalEmail)
                     .passwordHash("google-oauth2")
                     .displayName(finalName)
-                    .role(Role.CUSTOMER)
+                    .role(isAdminEmail && emailVerified ? Role.ADMIN : Role.CUSTOMER)
                     .totalScore(0L)
                     .build());
         });
+
+        if (existing.isPresent() && isAdminEmail && emailVerified && user.getRole() != Role.ADMIN) {
+            user.setRole(Role.ADMIN);
+            userRepository.save(user);
+        }
 
         String attrName = userRequest.getClientRegistration().getProviderDetails()
                 .getUserInfoEndpoint().getUserNameAttributeName();
@@ -64,6 +74,20 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
                 attributes,
                 attrName);
+    }
+
+    private boolean isEmailVerified(Map<String, Object> attributes) {
+        Object value = attributes.get("email_verified");
+        if (value instanceof Boolean b) {
+            return b;
+        }
+        return value != null && "true".equalsIgnoreCase(String.valueOf(value));
+    }
+
+    private boolean isAdminEmail(String email) {
+        String configured = appProperties.getAdmin().getEmail();
+        return configured != null && !configured.isBlank()
+                && configured.trim().equalsIgnoreCase(email);
     }
 }
 

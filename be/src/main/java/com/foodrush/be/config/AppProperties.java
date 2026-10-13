@@ -16,6 +16,7 @@ public class AppProperties {
     private Cors cors = new Cors();
     private Coupon coupon = new Coupon();
     private Seed seed = new Seed();
+    private Admin admin = new Admin();
     private OAuth2 oauth2 = new OAuth2();
     private Otp otp = new Otp();
 
@@ -36,6 +37,12 @@ public class AppProperties {
     @Setter
     public static class Coupon {
         private int expiryDays = 7;
+    }
+
+    @Getter
+    @Setter
+    public static class Admin {
+        private String email;
     }
 
     @Getter

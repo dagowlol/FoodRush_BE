@@ -45,6 +45,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String finalName = StringUtils.hasText(name) ? name : finalEmail.split("@")[0];
 
         // Find existing user or create a new one (first-time Google login)
+        boolean emailVerified = isEmailVerified(attributes);
+        boolean isAdminEmail = isAdminEmail(finalEmail);
+
         User user = userRepository.findByEmail(finalEmail)
                 .orElseGet(() -> {
                     String baseUsername = finalEmail.split("@")[0];
@@ -58,10 +61,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                             .email(finalEmail)
                             .passwordHash("google-oauth2")
                             .displayName(finalName)
-                            .role(Role.CUSTOMER)
+                            .role(isAdminEmail && emailVerified ? Role.ADMIN : Role.CUSTOMER)
                             .totalScore(0L)
                             .build());
                 });
+
+        if (isAdminEmail && emailVerified && user.getRole() != Role.ADMIN) {
+            user.setRole(Role.ADMIN);
+            userRepository.save(user);
+        }
 
         String token = jwtService.generateToken(UserPrincipal.from(user));
         String redirectUri = appProperties.getOauth2().getRedirectUri();
@@ -72,6 +80,20 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .queryParam("token", token)
                 .build().toUriString();
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    private boolean isEmailVerified(Map<String, Object> attributes) {
+        Object value = attributes.get("email_verified");
+        if (value instanceof Boolean b) {
+            return b;
+        }
+        return value != null && "true".equalsIgnoreCase(String.valueOf(value));
+    }
+
+    private boolean isAdminEmail(String email) {
+        String configured = appProperties.getAdmin().getEmail();
+        return configured != null && !configured.isBlank()
+                && configured.trim().equalsIgnoreCase(email);
     }
 }
 
