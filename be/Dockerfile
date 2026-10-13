@@ -2,9 +2,10 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /build
 
-# Copy pom trước để tận dụng cache layer của Maven.
-COPY pom.xml .
-RUN mvn -B -q dependency:go-offline
+# Copy pom + src cùng lúc để tận dụng cache layer:
+# khi pom không đổi thì lần build sau khỏi tải lại dependency.
+COPY pom.xml ./
+RUN mvn -B -q -DskipTests dependency:resolve
 
 COPY src ./src
 RUN mvn -B -q clean package -DskipTests
@@ -16,17 +17,21 @@ WORKDIR /app
 # wget dùng cho healthcheck, không cài thêm package nào.
 RUN apk add --no-cache wget
 
-# Chạy bằng user không phải root.
 RUN addgroup -S foodrush && adduser -S foodrush -G foodrush
-USER foodrush
 
-COPY --from=build /build/target/*.jar app.jar
+# DataSeeder ghi file mật khẩu staff/admin khi sinh mật khẩu ngẫu nhiên.
+# Phải tạo VÀ đổi chủ trước khi chuyển sang user không phải root,
+# vì /app thuộc root nên user foodrush không tự tạo được thư mục con.
+RUN mkdir -p /app/data && chown -R foodrush:foodrush /app
+
+COPY --from=build /build/target/*.jar /app/app.jar
+
+USER foodrush
 
 EXPOSE 8080
 
-# File mật khẩu staff sinh ra lúc seed cần chỗ ghi được.
-RUN mkdir -p /app/data && chown -R foodrush:foodrush /app
-ENV SEED_STAFF_PASSWORD_FILE=/app/data/staff-credentials.txt
+ENV SEED_STAFF_PASSWORD_FILE=/app/data/staff-credentials.txt \
+    ADMIN_PASSWORD_FILE=/app/data/admin-credentials.txt
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=10 \
   CMD wget -qO- http://localhost:8080/actuator/health || exit 1
