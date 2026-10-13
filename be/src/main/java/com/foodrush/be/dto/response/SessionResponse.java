@@ -15,7 +15,9 @@ public record SessionResponse(
         Instant startedAt,
         Instant finishedAt,
         Integer coinsEarned,
-        Long coinBalance) {
+        Long coinBalance,
+        Integer dailyCoinsEarned,
+        Integer dailyCoinCap) {
 
     public static SessionResponse from(GameSession session) {
         return new SessionResponse(
@@ -27,6 +29,8 @@ public record SessionResponse(
                 session.getFoodSafetyStatus(),
                 session.getStartedAt(),
                 session.getFinishedAt(),
+                null,
+                null,
                 null,
                 null);
     }

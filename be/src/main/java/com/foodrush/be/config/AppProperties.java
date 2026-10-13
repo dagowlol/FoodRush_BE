@@ -15,6 +15,7 @@ public class AppProperties {
     private Jwt jwt = new Jwt();
     private Cors cors = new Cors();
     private Coupon coupon = new Coupon();
+    private Coin coin = new Coin();
     private Seed seed = new Seed();
     private Admin admin = new Admin();
     private OAuth2 oauth2 = new OAuth2();
@@ -31,6 +32,13 @@ public class AppProperties {
     @Setter
     public static class Cors {
         private List<String> allowedOrigins = new ArrayList<>();
+    }
+
+    @Getter
+    @Setter
+    public static class Coin {
+        private int scoreDivisor = 10;
+        private int dailyEarningCap = 150;
     }
 
     @Getter

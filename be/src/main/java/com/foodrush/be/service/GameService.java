@@ -75,6 +75,8 @@ public class GameService {
 
         if (session.getStatus() == SessionStatus.FINISHED) {
             long balance = userRepository.findById(userId).map(User::getCoinBalance).orElse(0L);
+            long dailyEarned = coinWalletService.getDailyCoinsEarned(userId);
+            int dailyCap = coinWalletService.getDailyCoinCap();
             return new SessionResponse(
                     session.getId(),
                     session.getStatus(),
@@ -85,7 +87,9 @@ public class GameService {
                     session.getStartedAt(),
                     session.getFinishedAt(),
                     0,
-                    balance);
+                    balance,
+                    (int) dailyEarned,
+                    dailyCap);
         }
 
         // Basic validation of submitted run result (prevents obviously bogus scores).
@@ -110,6 +114,8 @@ public class GameService {
             // Reward failure should not discard the finished session.
         }
         long balance = userRepository.findById(userId).map(User::getCoinBalance).orElse(0L);
+        long dailyEarned = coinWalletService.getDailyCoinsEarned(userId);
+        int dailyCap = coinWalletService.getDailyCoinCap();
         return new SessionResponse(
                 session.getId(),
                 session.getStatus(),
@@ -120,7 +126,9 @@ public class GameService {
                 session.getStartedAt(),
                 session.getFinishedAt(),
                 coinsEarned,
-                balance);
+                balance,
+                (int) dailyEarned,
+                dailyCap);
     }
 
     @Transactional(readOnly = true)

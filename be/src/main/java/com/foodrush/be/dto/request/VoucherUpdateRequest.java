@@ -9,7 +9,9 @@ public record VoucherUpdateRequest(
         @Size(max = 120) String discountValue,
         @Min(0) Integer priceCoins,
         @Min(0) Integer remainingStock,
-        Boolean active) {
+        Boolean active,
+        String imageUrl,
+        String imagePublicId) {
 
     public boolean hasPriceUpdate() {
         return priceCoins != null;

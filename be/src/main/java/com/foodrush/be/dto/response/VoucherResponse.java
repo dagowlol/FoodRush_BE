@@ -12,7 +12,9 @@ public record VoucherResponse(
         int remainingStock,
         long issuedCount,
         boolean active,
-        boolean outOfStock) {
+        boolean outOfStock,
+        String imageUrl,
+        String imagePublicId) {
 
     public static VoucherResponse from(Voucher voucher, long issuedCount) {
         return new VoucherResponse(
@@ -25,6 +27,8 @@ public record VoucherResponse(
                 voucher.getRemainingStock(),
                 issuedCount,
                 voucher.isActive(),
-                voucher.getRemainingStock() <= 0);
+                voucher.getRemainingStock() <= 0,
+                voucher.getImageUrl(),
+                voucher.getImagePublicId());
     }
 }

@@ -54,6 +54,12 @@ public class Voucher extends BaseEntity {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
+    @Column(name = "image_public_id", length = 255)
+    private String imagePublicId;
+
     @Version
     @Column(nullable = false)
     private Long version;

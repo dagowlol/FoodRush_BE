@@ -6,7 +6,9 @@ import com.foodrush.be.dto.request.VoucherUpdateRequest;
 import com.foodrush.be.dto.response.IssuedVoucherResponse;
 import com.foodrush.be.dto.response.VoucherResponse;
 import com.foodrush.be.security.SecurityUtils;
+import com.foodrush.be.dto.response.VoucherImageUploadResponse;
 import com.foodrush.be.service.AdminVoucherService;
+import com.foodrush.be.service.CloudinaryUploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminVoucherController {
 
     private final AdminVoucherService adminVoucherService;
+    private final CloudinaryUploadService cloudinaryUploadService;
 
     @Operation(summary = "List all voucher types")
     @GetMapping
@@ -78,5 +81,13 @@ public class AdminVoucherController {
     @GetMapping("/issued")
     public ResponseEntity<ApiResponse<List<IssuedVoucherResponse>>> issued() {
         return ResponseEntity.ok(ApiResponse.ok(adminVoucherService.issuedVouchers()));
+    }
+
+    @Operation(summary = "Upload a voucher image to Cloudinary")
+    @PostMapping(value = "/upload-image", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<VoucherImageUploadResponse>> uploadImage(
+            @org.springframework.web.bind.annotation.RequestParam("image") org.springframework.web.multipart.MultipartFile image) {
+        VoucherImageUploadResponse response = cloudinaryUploadService.upload(image);
+        return ResponseEntity.ok(ApiResponse.ok("Image uploaded", response));
     }
 }

@@ -12,9 +12,11 @@ import com.foodrush.be.entity.enums.CoinTransactionType;
 import com.foodrush.be.exception.AppException;
 import com.foodrush.be.repository.CoinTransactionRepository;
 import com.foodrush.be.repository.GameSessionRepository;
+import com.foodrush.be.config.AppProperties;
 import com.foodrush.be.repository.UserRepository;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,12 +29,28 @@ public class CoinWalletService {
     private final UserRepository userRepository;
     private final CoinTransactionRepository coinTransactionRepository;
     private final GameSessionRepository gameSessionRepository;
+    private final AppProperties appProperties;
 
     @Transactional(readOnly = true)
     public WalletResponse getWallet(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         return new WalletResponse(user.getCoinBalance());
+    }
+
+    @Transactional(readOnly = true)
+    public long getDailyCoinsEarned(Long userId) {
+        ZoneId zone = ZoneId.of(appProperties.getTimezone());
+        LocalDate today = LocalDate.now(zone);
+        java.time.Instant start = today.atStartOfDay(zone).toInstant();
+        java.time.Instant end = start.plus(1, ChronoUnit.DAYS);
+        long value = coinTransactionRepository.sumAmountByUserAndTypeAndCreatedAtBetween(
+                userId, CoinTransactionType.GAME_REWARD, start, end);
+        return Math.max(0, value);
+    }
+
+    public int getDailyCoinCap() {
+        return Math.max(0, appProperties.getCoin().getDailyEarningCap());
     }
 
     @Transactional(readOnly = true)
@@ -44,7 +62,7 @@ public class CoinWalletService {
 
     @Transactional
     public int awardForSession(Long userId, Long sessionId, int finalScore) {
-        if (finalScore <= 0) {
+        if (finalScore < 0) {
             return 0;
         }
         if (coinTransactionRepository.existsByGameSession_Id(sessionId)) {
@@ -58,12 +76,32 @@ public class CoinWalletService {
             throw new AppException(ErrorCode.SESSION_NOT_FOUND);
         }
 
+        // Lock the user before checking/aggregating daily earnings to avoid races.
         User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        int coinsEarned = finalScore / 10;
-        if (coinsEarned < 0) {
-            coinsEarned = 0;
+        int divisor = Math.max(1, appProperties.getCoin().getScoreDivisor());
+        int normalCoins = finalScore / divisor;
+        if (normalCoins <= 0) {
+            return 0;
+        }
+
+        ZoneId zone = ZoneId.of(appProperties.getTimezone());
+        LocalDate today = LocalDate.now(zone);
+        java.time.Instant start = today.atStartOfDay(zone).toInstant();
+        java.time.Instant end = start.plus(1, ChronoUnit.DAYS);
+
+        long dailyEarned = coinTransactionRepository.sumAmountByUserAndTypeAndCreatedAtBetween(
+                userId, CoinTransactionType.GAME_REWARD, start, end);
+        if (dailyEarned < 0) {
+            dailyEarned = 0;
+        }
+
+        int cap = Math.max(0, appProperties.getCoin().getDailyEarningCap());
+        long remaining = Math.max(0, cap - dailyEarned);
+        int coinsEarned = (int) Math.min(normalCoins, remaining);
+        if (coinsEarned <= 0) {
+            return 0;
         }
 
         long newBalance = user.getCoinBalance() + coinsEarned;

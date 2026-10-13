@@ -10,5 +10,7 @@ public record VoucherCreateRequest(
         @Size(max = 120) String discountValue,
         @Min(0) int priceCoins,
         @Min(0) int initialStock,
-        Boolean active) {
+        Boolean active,
+        String imageUrl,
+        String imagePublicId) {
 }

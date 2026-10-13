@@ -48,6 +48,8 @@ public class AdminVoucherService {
                 .initialStock(request.initialStock())
                 .remainingStock(request.initialStock())
                 .active(request.active() == null || request.active())
+                .imageUrl(request.imageUrl())
+                .imagePublicId(request.imagePublicId())
                 .build();
         voucherRepository.save(voucher);
         return VoucherResponse.from(voucher, 0);
@@ -76,6 +78,8 @@ public class AdminVoucherService {
         if (request.active() != null) {
             voucher.setActive(request.active());
         }
+        voucher.setImageUrl(request.imageUrl());
+        voucher.setImagePublicId(request.imagePublicId());
         if (request.remainingStock() != null) {
             if (request.remainingStock() < 0) {
                 throw new AppException(ErrorCode.INVALID_INVENTORY);
