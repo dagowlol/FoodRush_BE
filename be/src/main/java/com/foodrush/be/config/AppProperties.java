@@ -16,6 +16,8 @@ public class AppProperties {
     private Cors cors = new Cors();
     private Coupon coupon = new Coupon();
     private Seed seed = new Seed();
+    private OAuth2 oauth2 = new OAuth2();
+    private Otp otp = new Otp();
 
     @Getter
     @Setter
@@ -45,5 +47,19 @@ public class AppProperties {
         private String staffPassword;
         private String staffDisplayName = "Five Star Staff";
         private String staffPasswordFile = "staff-credentials.txt";
+    }
+
+    @Getter
+    @Setter
+    public static class OAuth2 {
+        private String redirectUri;
+    }
+
+    @Getter
+    @Setter
+    public static class Otp {
+        private int ttlMinutes = 5;
+        private String senderName = "FoodRush";
+        private String senderEmail;
     }
 }

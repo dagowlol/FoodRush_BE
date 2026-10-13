@@ -33,24 +33,37 @@ public class AuthService {
         if (userRepository.existsByUsername(request.username())) {
             throw new AppException(ErrorCode.USERNAME_TAKEN);
         }
-        if (userRepository.existsByEmail(request.email())) {
+        String email = request.username().trim().toLowerCase() + "@foodrush.local";
+        if (userRepository.existsByEmail(email)) {
             throw new AppException(ErrorCode.EMAIL_TAKEN);
         }
+        return registerInternal(request, email);
+    }
 
+    @Transactional
+    public AuthResponse registerWithOtp(RegisterRequest request, String email) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new AppException(ErrorCode.USERNAME_TAKEN);
+        }
+        if (userRepository.existsByEmail(email.toLowerCase())) {
+            throw new AppException(ErrorCode.EMAIL_TAKEN);
+        }
+        return registerInternal(request, email.toLowerCase());
+    }
+
+    private AuthResponse registerInternal(RegisterRequest request, String email) {
         String displayName = StringUtils.hasText(request.displayName())
                 ? request.displayName().trim()
                 : request.username();
-
         User user = User.builder()
                 .username(request.username().trim())
-                .email(request.email().trim().toLowerCase())
+                .email(email)
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .displayName(displayName)
                 .role(Role.CUSTOMER)
                 .totalScore(0L)
                 .build();
         userRepository.save(user);
-
         return issueToken(user);
     }
 
@@ -75,3 +88,4 @@ public class AuthService {
         return AuthResponse.of(token, jwtService.getExpirationMs(), UserResponse.from(user));
     }
 }
+

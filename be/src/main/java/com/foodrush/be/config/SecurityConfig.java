@@ -1,8 +1,10 @@
 package com.foodrush.be.config;
 
+import com.foodrush.be.auth.oauth.CustomOAuth2UserService;
+import com.foodrush.be.auth.oauth.OAuth2AuthenticationSuccessHandler;
+import com.foodrush.be.security.CustomUserDetailsService;
 import com.foodrush.be.security.JwtAuthenticationFilter;
 import com.foodrush.be.security.RestSecurityHandlers;
-import com.foodrush.be.security.CustomUserDetailsService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -35,12 +37,16 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/error"
+            "/error",
+            "/oauth2/**",
+            "/login/oauth2/**"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RestSecurityHandlers restSecurityHandlers;
     private final AppProperties appProperties;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -75,6 +81,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/staff/**").hasRole("STAFF")
                         .anyRequest().authenticated())
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler))
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(restSecurityHandlers)
                         .accessDeniedHandler(restSecurityHandlers))
@@ -103,3 +112,4 @@ public class SecurityConfig {
         return source;
     }
 }
+
