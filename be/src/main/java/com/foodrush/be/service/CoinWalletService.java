@@ -113,7 +113,7 @@ public class CoinWalletService {
                 .amount(coinsEarned)
                 .balanceAfter(newBalance)
                 .type(CoinTransactionType.GAME_REWARD)
-                .description("Game session reward")
+                .description("Phần thưởng phiên chơi")
                 .gameSession(session)
                 .build();
         try {

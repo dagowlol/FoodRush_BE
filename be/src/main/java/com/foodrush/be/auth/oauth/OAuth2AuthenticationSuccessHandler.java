@@ -1,5 +1,8 @@
 package com.foodrush.be.auth.oauth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.foodrush.be.common.ApiResponse;
+import com.foodrush.be.common.ErrorCode;
 import com.foodrush.be.config.AppProperties;
 import com.foodrush.be.entity.User;
 import com.foodrush.be.entity.enums.Role;
@@ -12,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -27,6 +31,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final AppProperties appProperties;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -69,6 +74,16 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         if (isAdminEmail && emailVerified && user.getRole() != Role.ADMIN) {
             user.setRole(Role.ADMIN);
             userRepository.save(user);
+        }
+
+        if (!user.isActive()) {
+            // Locked accounts must not be able to slip in through the OAuth2 route.
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(
+                    ApiResponse.error(ErrorCode.ACCOUNT_LOCKED.getDefaultMessage())));
+            return;
         }
 
         String token = jwtService.generateToken(UserPrincipal.from(user));

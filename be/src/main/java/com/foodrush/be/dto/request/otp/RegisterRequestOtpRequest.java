@@ -7,20 +7,20 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterRequestOtpRequest(
 
-        @NotBlank(message = "username is required")
-        @Size(min = 3, max = 50, message = "username must be between 3 and 50 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "username may only contain letters, digits, dot, underscore or dash")
+        @NotBlank(message = "Vui lòng nhập tên đăng nhập")
+        @Size(min = 3, max = 50, message = "Tên đăng nhập phải có từ 3 đến 50 ký tự")
+        @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "Tên đăng nhập chỉ được chứa chữ, số, dấu chấm, gạch dưới hoặc gạch ngang")
         String username,
 
-        @NotBlank(message = "email is required")
-        @Email(message = "email must be a valid address")
-        @Size(max = 120, message = "email is too long")
+        @NotBlank(message = "Vui lòng nhập email")
+        @Email(message = "Email không hợp lệ")
+        @Size(max = 120, message = "Email quá dài")
         String email,
 
-        @NotBlank(message = "password is required")
-        @Size(min = 6, max = 72, message = "password must be between 6 and 72 characters")
+        @NotBlank(message = "Vui lòng nhập mật khẩu")
+        @Size(min = 6, max = 72, message = "Mật khẩu phải có từ 6 đến 72 ký tự")
         String password,
 
-        @Size(max = 120, message = "displayName is too long")
+        @Size(max = 120, message = "Tên hiển thị quá dài")
         String displayName) {
 }

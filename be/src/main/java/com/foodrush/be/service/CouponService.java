@@ -100,6 +100,6 @@ public class CouponService {
                 return code;
             }
         }
-        throw new AppException(ErrorCode.INTERNAL_ERROR, "Could not generate a unique coupon code");
+        throw new AppException(ErrorCode.INTERNAL_ERROR, "Không thể tạo mã giảm giá duy nhất");
     }
 }

@@ -55,9 +55,10 @@ public class VoucherService {
                 .max(LocalDate::compareTo)
                 .orElse(null);
         if (redeemedToday) {
-            return new RedemptionStatusResponse(false, lastDate, "You have already redeemed a voucher today. Try again tomorrow.");
+            return new RedemptionStatusResponse(false, lastDate,
+                    "Bạn đã đổi voucher hôm nay. Hãy thử lại vào ngày mai.");
         }
-        return new RedemptionStatusResponse(true, lastDate, "You can redeem a voucher today.");
+        return new RedemptionStatusResponse(true, lastDate, "Bạn có thể đổi voucher hôm nay.");
     }
 
     @Transactional
@@ -98,7 +99,7 @@ public class VoucherService {
         voucherRepository.save(voucher);
 
         coinWalletService.spendForVoucher(userId, issued, voucher.getPriceCoins(),
-                "Redeemed voucher " + voucher.getName());
+                "Đổi voucher " + voucher.getName());
 
         return IssuedVoucherResponse.from(issued);
     }

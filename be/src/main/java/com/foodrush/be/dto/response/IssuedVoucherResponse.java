@@ -28,7 +28,7 @@ public record IssuedVoucherResponse(
                 issued.getRedemptionDate(),
                 issued.getIssuedAt(),
                 issued.getStatus().name(),
-                "Present this code at the Five Star store to redeem your voucher.",
+                "Hãy xuất trình mã này tại cửa hàng Five Star để nhận voucher.",
                 issued.getUsedAt());
     }
 }

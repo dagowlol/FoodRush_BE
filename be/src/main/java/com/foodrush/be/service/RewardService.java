@@ -42,11 +42,12 @@ public class RewardService {
 
     private String message(boolean claimedToday, List<RewardOptionResponse> options) {
         if (claimedToday) {
-            return "You have already claimed a coupon today. Keep playing to earn more points!";
+            return "Bạn đã nhận mã giảm giá hôm nay. Hãy tiếp tục chơi để tích luỹ thêm điểm!";
         }
         if (options.isEmpty()) {
-            return "Reach at least " + RewardPolicy.FIVE_PERCENT_THRESHOLD + " points to unlock a 5% coupon.";
+            return "Cần ít nhất " + RewardPolicy.FIVE_PERCENT_THRESHOLD
+                    + " điểm để mở khóa mã giảm giá 5%.";
         }
-        return "You can claim your reward now.";
+        return "Bạn có thể nhận phần thưởng ngay bây giờ.";
     }
 }

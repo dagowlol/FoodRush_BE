@@ -53,7 +53,7 @@ public class AdminVoucherController {
     @PostMapping
     public ResponseEntity<ApiResponse<VoucherResponse>> create(@Valid @RequestBody VoucherCreateRequest request) {
         VoucherResponse response = adminVoucherService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Voucher created", response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Đã tạo voucher", response));
     }
 
     @Operation(summary = "Update a voucher type")
@@ -61,7 +61,7 @@ public class AdminVoucherController {
     public ResponseEntity<ApiResponse<VoucherResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody VoucherUpdateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok("Voucher updated", adminVoucherService.update(id, request)));
+        return ResponseEntity.ok(ApiResponse.ok("Đã cập nhật voucher", adminVoucherService.update(id, request)));
     }
 
     @Operation(summary = "Enable or disable a voucher")
@@ -73,7 +73,7 @@ public class AdminVoucherController {
         if (active == null) {
             throw new com.foodrush.be.exception.AppException(com.foodrush.be.common.ErrorCode.VALIDATION_ERROR);
         }
-        return ResponseEntity.ok(ApiResponse.ok("Voucher status updated",
+        return ResponseEntity.ok(ApiResponse.ok("Đã cập nhật trạng thái voucher",
                 adminVoucherService.updateStatus(id, active)));
     }
 
@@ -88,6 +88,6 @@ public class AdminVoucherController {
     public ResponseEntity<ApiResponse<VoucherImageUploadResponse>> uploadImage(
             @org.springframework.web.bind.annotation.RequestParam("image") org.springframework.web.multipart.MultipartFile image) {
         VoucherImageUploadResponse response = cloudinaryUploadService.upload(image);
-        return ResponseEntity.ok(ApiResponse.ok("Image uploaded", response));
+        return ResponseEntity.ok(ApiResponse.ok("Đã tải ảnh lên", response));
     }
 }

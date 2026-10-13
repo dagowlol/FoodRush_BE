@@ -42,6 +42,6 @@ public class VoucherController {
     @PostMapping("/{id}/redeem")
     public ResponseEntity<ApiResponse<IssuedVoucherResponse>> redeem(@PathVariable Long id) {
         IssuedVoucherResponse response = voucherService.redeem(SecurityUtils.currentUserId(), id);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Voucher redeemed", response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Đã đổi voucher", response));
     }
 }

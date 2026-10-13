@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequest(
 
-        @NotBlank(message = "username is required")
+        @NotBlank(message = "Vui lòng nhập tên đăng nhập")
         String username,
 
-        @NotBlank(message = "password is required")
+        @NotBlank(message = "Vui lòng nhập mật khẩu")
         String password) {
 }

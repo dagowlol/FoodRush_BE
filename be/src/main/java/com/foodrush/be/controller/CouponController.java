@@ -33,7 +33,7 @@ public class CouponController {
             @Valid @RequestBody(required = false) ClaimCouponRequest request) {
         CouponResponse response = couponService.claim(SecurityUtils.currentUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Coupon claimed", response));
+                .body(ApiResponse.ok("Đã nhận mã giảm giá", response));
     }
 
     @Operation(summary = "List the current user's coupons")

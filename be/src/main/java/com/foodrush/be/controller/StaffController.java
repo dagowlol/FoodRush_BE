@@ -40,7 +40,7 @@ public class StaffController {
             @Valid @RequestBody(required = false) RedeemCouponRequest request) {
         RedemptionResponse response = redemptionService.redeem(
                 SecurityUtils.currentUserId(), code, request);
-        return ResponseEntity.ok(ApiResponse.ok("Coupon redeemed", response));
+        return ResponseEntity.ok(ApiResponse.ok("Đã đổi mã giảm giá", response));
     }
 
     @Operation(summary = "List coupon redemption history")

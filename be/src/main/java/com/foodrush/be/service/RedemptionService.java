@@ -43,7 +43,7 @@ public class RedemptionService {
     public CouponValidationResponse validate(String code) {
         String normalized = normalize(code);
         if (normalized.isEmpty()) {
-            throw new AppException(ErrorCode.VALIDATION_ERROR, "Code must not be blank");
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Mã không được để trống");
         }
 
         // A code can come from either flow, so probe both tables. Coupon codes and
@@ -63,7 +63,7 @@ public class RedemptionService {
     public RedemptionResponse redeem(Long staffId, String code, RedeemCouponRequest request) {
         String normalized = normalize(code);
         if (normalized.isEmpty()) {
-            throw new AppException(ErrorCode.VALIDATION_ERROR, "Code must not be blank");
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Mã không được để trống");
         }
 
         if (couponRepository.existsByCode(normalized)) {
@@ -111,15 +111,15 @@ public class RedemptionService {
 
         Instant now = Instant.now();
         if (issuedVoucher.getStatus() == IssuedVoucherStatus.USED || issuedVoucher.getUsedAt() != null) {
-            throw new AppException(ErrorCode.COUPON_ALREADY_REDEEMED, "This voucher has already been used");
+            throw new AppException(ErrorCode.COUPON_ALREADY_REDEEMED, "Voucher này đã được sử dụng");
         }
         if (issuedVoucher.getStatus() == IssuedVoucherStatus.EXPIRED) {
-            throw new AppException(ErrorCode.COUPON_EXPIRED, "This voucher has expired");
+            throw new AppException(ErrorCode.COUPON_EXPIRED, "Voucher này đã hết hạn");
         }
         if (issuedVoucher.getRedemptionDate().isBefore(LocalDate.now(ZoneId.systemDefault()))) {
             issuedVoucher.setStatus(IssuedVoucherStatus.EXPIRED);
             issuedVoucherRepository.save(issuedVoucher);
-            throw new AppException(ErrorCode.COUPON_EXPIRED, "This voucher has expired");
+            throw new AppException(ErrorCode.COUPON_EXPIRED, "Voucher này đã hết hạn");
         }
 
         User staff = userRepository.getReferenceById(staffId);
@@ -161,9 +161,9 @@ public class RedemptionService {
         boolean valid = effectiveStatus == CouponStatus.ACTIVE;
 
         String message = switch (effectiveStatus) {
-            case ACTIVE -> "Coupon is valid and ready to redeem";
-            case REDEEMED -> "This coupon has already been redeemed";
-            case EXPIRED -> "This coupon has expired";
+            case ACTIVE -> "Mã giảm giá hợp lệ, có thể đổi ngay";
+            case REDEEMED -> "Mã giảm giá này đã được đổi";
+            case EXPIRED -> "Mã giảm giá này đã hết hạn";
         };
 
         return CouponValidationResponse.coupon(
@@ -198,9 +198,9 @@ public class RedemptionService {
         }
 
         String message = switch (effectiveStatus) {
-            case ACTIVE -> "Voucher is valid and ready to redeem";
-            case REDEEMED -> "This voucher has already been used";
-            case EXPIRED -> "This voucher has expired";
+            case ACTIVE -> "Voucher hợp lệ, có thể đổi ngay";
+            case REDEEMED -> "Voucher này đã được sử dụng";
+            case EXPIRED -> "Voucher này đã hết hạn";
         };
 
         return new CouponValidationResponse(

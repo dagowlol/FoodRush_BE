@@ -35,7 +35,7 @@ public class GameController {
     public ResponseEntity<ApiResponse<SessionResponse>> startSession() {
         SessionResponse response = gameService.startSession(SecurityUtils.currentUserId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Game session started", response));
+                .body(ApiResponse.ok("Đã bắt đầu phiên chơi", response));
     }
 
     @Operation(summary = "Get the current state of a game session")
@@ -49,7 +49,7 @@ public class GameController {
     @PostMapping("/sessions/{sessionId}/food-safety/contaminate")
     public ResponseEntity<ApiResponse<SessionResponse>> contaminate(@PathVariable Long sessionId) {
         SessionResponse response = gameService.contaminateFood(SecurityUtils.currentUserId(), sessionId);
-        return ResponseEntity.ok(ApiResponse.ok("Food marked as contaminated", response));
+        return ResponseEntity.ok(ApiResponse.ok("Đã đánh dấu thực phẩm bị nhiễm", response));
     }
 
     @Operation(summary = "Finish a game session with the final run results")
@@ -58,7 +58,7 @@ public class GameController {
             @PathVariable Long sessionId,
             @Valid @RequestBody(required = false) FinishSessionRequest request) {
         SessionResponse response = gameService.finishSession(SecurityUtils.currentUserId(), sessionId, request);
-        return ResponseEntity.ok(ApiResponse.ok("Game session finished", response));
+        return ResponseEntity.ok(ApiResponse.ok("Đã kết thúc phiên chơi", response));
     }
 
     @Operation(summary = "Get the current user's game history")

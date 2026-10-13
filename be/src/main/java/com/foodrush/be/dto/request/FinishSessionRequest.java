@@ -5,15 +5,15 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 public record FinishSessionRequest(
 
-        @PositiveOrZero(message = "score must not be negative")
-        @Max(value = 1_000_000, message = "score is unrealistically high")
+        @PositiveOrZero(message = "Điểm không được âm")
+        @Max(value = 1_000_000, message = "Điểm không hợp lý")
         int score,
 
-        @PositiveOrZero(message = "bugsKilled must not be negative")
-        @Max(value = 100_000, message = "bugsKilled is unrealistically high")
+        @PositiveOrZero(message = "Số bug đã tiêu diệt không được âm")
+        @Max(value = 100_000, message = "Số bug đã tiêu diệt không hợp lý")
         int bugsKilled,
 
-        @PositiveOrZero(message = "wavesCompleted must not be negative")
-        @Max(value = 10_000, message = "wavesCompleted is unrealistically high")
+        @PositiveOrZero(message = "Số wave đã qua không được âm")
+        @Max(value = 10_000, message = "Số wave đã qua không hợp lý")
         int wavesCompleted) {
 }

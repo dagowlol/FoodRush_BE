@@ -4,6 +4,6 @@ import jakarta.validation.constraints.Size;
 
 public record RedeemCouponRequest(
 
-        @Size(max = 255, message = "note is too long")
+        @Size(max = 255, message = "Ghi chú quá dài")
         String note) {
 }

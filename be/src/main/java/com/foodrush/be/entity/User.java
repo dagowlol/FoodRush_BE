@@ -52,6 +52,16 @@ public class User extends BaseEntity {
     @Column(name = "coin_balance", nullable = false)
     private long coinBalance = 0L;
 
+    /**
+     * Tài khoản còn được phép đăng nhập hay không. Admin có thể khoá tài khoản
+     * từ trang quản trị; tài khoản bị khoá sẽ bị chặn cả khi đăng nhập mới lẫn
+     * khi dùng JWT đã cấp trước đó.
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    @org.hibernate.annotations.ColumnDefault("true")
+    private boolean active = true;
+
     @Version
     @Column(nullable = false)
     private Long version;

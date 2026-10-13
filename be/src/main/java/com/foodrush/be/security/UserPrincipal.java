@@ -16,16 +16,19 @@ public class UserPrincipal implements UserDetails {
     private final String username;
     private final String password;
     private final Role role;
+    private final boolean active;
 
-    public UserPrincipal(Long id, String username, String password, Role role) {
+    public UserPrincipal(Long id, String username, String password, Role role, boolean active) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
+        this.active = active;
     }
 
     public static UserPrincipal from(User user) {
-        return new UserPrincipal(user.getId(), user.getUsername(), user.getPasswordHash(), user.getRole());
+        return new UserPrincipal(
+                user.getId(), user.getUsername(), user.getPasswordHash(), user.getRole(), user.isActive());
     }
 
     @Override
@@ -50,6 +53,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 }

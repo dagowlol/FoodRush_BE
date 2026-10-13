@@ -46,7 +46,7 @@ public class AuthController {
             throw new AppException(ErrorCode.EMAIL_TAKEN);
         }
         otpService.requestOtp(request.email());
-        return ResponseEntity.ok(ApiResponse.success("OTP sent to email"));
+        return ResponseEntity.ok(ApiResponse.success("Mã OTP đã được gửi về email"));
     }
 
     @Operation(summary = "Verify OTP and register")
@@ -60,20 +60,20 @@ public class AuthController {
         RegisterRequest reg = new RegisterRequest(request.username(), request.password(), request.displayName());
         AuthResponse response = authService.registerWithOtp(reg, request.email());
         otpService.markUsed(otp);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Registration successful", response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Đăng ký thành công", response));
     }
 
     @Operation(summary = "Register a new customer account (legacy)")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Registration successful", response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Đăng ký thành công", response));
     }
 
     @Operation(summary = "Login and obtain a JWT")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok("Login successful", authService.login(request)));
+        return ResponseEntity.ok(ApiResponse.ok("Đăng nhập thành công", authService.login(request)));
     }
 
     @Operation(summary = "Get the current authenticated user")

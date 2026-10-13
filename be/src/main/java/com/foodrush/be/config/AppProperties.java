@@ -60,7 +60,7 @@ public class AppProperties {
         private String staffUsername = "staff";
         private String staffEmail = "staff@fivestar.local";
         private String staffPassword;
-        private String staffDisplayName = "Five Star Staff";
+        private String staffDisplayName = "Nhân viên Five Star";
         private String staffPasswordFile = "staff-credentials.txt";
     }
 

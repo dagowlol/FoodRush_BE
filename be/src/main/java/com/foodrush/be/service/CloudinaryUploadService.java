@@ -21,27 +21,27 @@ public class CloudinaryUploadService {
 
     public VoucherImageUploadResponse upload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new AppException(ErrorCode.VALIDATION_ERROR, "Image file is required");
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Vui lòng chọn tệp ảnh");
         }
         if (file.getSize() > properties.getMaxFileSizeBytes()) {
             throw new AppException(ErrorCode.VALIDATION_ERROR,
-                    "Image must be smaller than " + (properties.getMaxFileSizeBytes() / (1024 * 1024)) + " MB");
+                    "Dung lượng ảnh phải nhỏ hơn " + (properties.getMaxFileSizeBytes() / (1024 * 1024)) + " MB");
         }
 
         String detectedType;
         try (InputStream in = file.getInputStream()) {
             detectedType = detectImageType(in);
         } catch (IOException ex) {
-            throw new AppException(ErrorCode.INTERNAL_ERROR, "Could not read uploaded image");
+            throw new AppException(ErrorCode.INTERNAL_ERROR, "Không đọc được tệp ảnh vừa tải lên");
         }
         if (detectedType == null || !properties.getAllowedContentTypes().contains(detectedType)) {
-            throw new AppException(ErrorCode.VALIDATION_ERROR, "Only JPEG, PNG, and WebP images are allowed");
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Chỉ chấp nhận ảnh định dạng JPEG, PNG hoặc WebP");
         }
 
         if (properties.getCloudName() == null || properties.getCloudName().isBlank()
                 || properties.getApiKey() == null || properties.getApiKey().isBlank()
                 || properties.getApiSecret() == null || properties.getApiSecret().isBlank()) {
-            throw new AppException(ErrorCode.INTERNAL_ERROR, "Cloudinary is not configured");
+            throw new AppException(ErrorCode.INTERNAL_ERROR, "Cloudinary chưa được cấu hình");
         }
 
         Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
@@ -57,12 +57,12 @@ public class CloudinaryUploadService {
             String url = (String) result.get("secure_url");
             String publicId = (String) result.get("public_id");
             if (url == null || url.isBlank()) {
-                throw new AppException(ErrorCode.INTERNAL_ERROR, "Cloudinary did not return an image URL");
+                throw new AppException(ErrorCode.INTERNAL_ERROR, "Cloudinary không trả về đường dẫn ảnh");
             }
             return new VoucherImageUploadResponse(url, publicId);
         } catch (Exception ex) {
             String detail = ex.getMessage() == null ? "" : (": " + ex.getMessage());
-            throw new AppException(ErrorCode.INTERNAL_ERROR, "Image upload to Cloudinary failed" + detail);
+            throw new AppException(ErrorCode.INTERNAL_ERROR, "Tải ảnh lên Cloudinary thất bại" + detail);
         }
     }
 

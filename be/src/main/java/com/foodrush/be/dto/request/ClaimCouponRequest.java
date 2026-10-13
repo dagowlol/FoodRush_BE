@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min;
 
 public record ClaimCouponRequest(
 
-        @Min(value = 1, message = "discountPercent must be at least 1")
-        @Max(value = 100, message = "discountPercent must be at most 100")
+        @Min(value = 1, message = "Phần trăm giảm giá phải ít nhất là 1")
+        @Max(value = 100, message = "Phần trăm giảm giá không được vượt quá 100")
         Integer discountPercent) {
 }

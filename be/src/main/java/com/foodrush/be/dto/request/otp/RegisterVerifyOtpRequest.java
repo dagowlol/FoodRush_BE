@@ -6,21 +6,21 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterVerifyOtpRequest(
 
-        @NotBlank(message = "email is required")
-        @Email(message = "email must be a valid address")
-        @Size(max = 120, message = "email is too long")
+        @NotBlank(message = "Vui lòng nhập email")
+        @Email(message = "Email không hợp lệ")
+        @Size(max = 120, message = "Email quá dài")
         String email,
 
-        @NotBlank(message = "otp is required")
-        @Size(min = 4, max = 10, message = "otp must be valid")
+        @NotBlank(message = "Vui lòng nhập mã OTP")
+        @Size(min = 4, max = 10, message = "Mã OTP không hợp lệ")
         String otp,
 
-        @NotBlank(message = "username is required")
+        @NotBlank(message = "Vui lòng nhập tên đăng nhập")
         String username,
 
-        @NotBlank(message = "password is required")
+        @NotBlank(message = "Vui lòng nhập mật khẩu")
         String password,
 
-        @Size(max = 120, message = "displayName is too long")
+        @Size(max = 120, message = "Tên hiển thị quá dài")
         String displayName) {
 }

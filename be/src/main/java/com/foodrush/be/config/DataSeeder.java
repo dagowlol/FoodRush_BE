@@ -1,10 +1,8 @@
 package com.foodrush.be.config;
 
 import com.foodrush.be.entity.User;
-import com.foodrush.be.entity.Voucher;
 import com.foodrush.be.entity.enums.Role;
 import com.foodrush.be.repository.UserRepository;
-import com.foodrush.be.repository.VoucherRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -29,7 +27,6 @@ public class DataSeeder implements ApplicationRunner {
     private static final int GENERATED_PASSWORD_LENGTH = 16;
 
     private final UserRepository userRepository;
-    private final VoucherRepository voucherRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppProperties appProperties;
 
@@ -41,7 +38,6 @@ public class DataSeeder implements ApplicationRunner {
         if (appProperties.getSeed().isEnabled()) {
             seedStaff();
         }
-        seedVouchers();
         bootstrapAdmin();
     }
 
@@ -77,35 +73,7 @@ public class DataSeeder implements ApplicationRunner {
         }
     }
 
-    private void seedVouchers() {
-        seedVoucher("50k-discount", "50,000 VND discount voucher", "50,000 VND off your order", "50,000 VND",
-                120, 1);
-        seedVoucher("chicken", "Chicken voucher", "Free chicken reward", "Chicken",
-                100, 2);
-        seedVoucher("20k-discount", "20,000 VND discount voucher", "20,000 VND off your order", "20,000 VND",
-                90, 5);
-        seedVoucher("milk-tea", "Milk tea voucher", "Free milk tea reward", "Milk tea",
-                80, 2);
-    }
-
-    private void seedVoucher(String seedKey, String name, String description, String discountValue,
-                             int priceCoins, int stock) {
-        if (voucherRepository.findBySeedKey(seedKey).isPresent()) {
-            return;
-        }
-        Voucher voucher = Voucher.builder()
-                .seedKey(seedKey)
-                .name(name)
-                .description(description)
-                .discountValue(discountValue)
-                .priceCoins(priceCoins)
-                .initialStock(stock)
-                .remainingStock(stock)
-                .active(true)
-                .build();
-        voucherRepository.save(voucher);
-        log.info("Seeded voucher '{}'.", name);
-    }
+    
 
     private void bootstrapAdmin() {
         String adminEmail = appProperties.getAdmin().getEmail();
