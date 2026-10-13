@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -37,8 +38,9 @@ public class DataSeeder implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         if (appProperties.getSeed().isEnabled()) {
             seedStaff();
+            seedAdmin();
         }
-        bootstrapAdmin();
+        promoteConfiguredAdmin();
     }
 
     private void seedStaff() {
@@ -46,41 +48,63 @@ public class DataSeeder implements ApplicationRunner {
         if (userRepository.existsByUsername(seed.getStaffUsername())) {
             return;
         }
+        createAccount(seed.getStaffUsername(), seed.getStaffEmail(), seed.getStaffDisplayName(),
+                seed.getStaffPassword(), Role.STAFF, seed.getStaffPasswordFile());
+    }
 
-        String password = seed.getStaffPassword();
-        boolean generated = !StringUtils.hasText(password);
-        if (generated) {
-            password = generatePassword();
+    private void seedAdmin() {
+        AppProperties.Admin admin = appProperties.getAdmin();
+        String username = admin.getUsername();
+        if (!StringUtils.hasText(username) || userRepository.existsByUsername(username)) {
+            return;
         }
+        // Không có email cấu hình thì dựng email nội bộ để tài khoản vẫn hợp lệ.
+        String email = StringUtils.hasText(admin.getEmail())
+                ? admin.getEmail().trim().toLowerCase(Locale.ROOT)
+                : username + "@fivestar.local";
+        createAccount(username, email, admin.getDisplayName(), admin.getPassword(),
+                Role.ADMIN, admin.getPasswordFile());
+    }
 
-        User staff = User.builder()
-                .username(seed.getStaffUsername())
-                .email(seed.getStaffEmail().trim().toLowerCase())
+    /**
+     * Tạo một tài khoản với mật khẩu do cấu hình chỉ định. Nếu không có mật khẩu thì
+     * sinh ngẫu nhiên và ghi ra file để người đọc có thể đăng nhập lần đầu.
+     */
+    private void createAccount(String username, String email, String displayName,
+                               String configuredPassword, Role role, String passwordFile) {
+        boolean generated = !StringUtils.hasText(configuredPassword);
+        String password = generated ? generatePassword() : configuredPassword;
+
+        User user = User.builder()
+                .username(username)
+                .email(email)
                 .passwordHash(passwordEncoder.encode(password))
-                .displayName(seed.getStaffDisplayName())
-                .role(Role.STAFF)
+                .displayName(StringUtils.hasText(displayName) ? displayName : username)
+                .role(role)
                 .totalScore(0L)
                 .build();
-        userRepository.save(staff);
+        userRepository.save(user);
 
         if (generated) {
-            writeCredentials(seed.getStaffUsername(), password);
-            log.warn("Seeded STAFF account '{}' with a generated password. "
-                    + "Credentials written to '{}' - change it and delete the file.",
-                    seed.getStaffUsername(), seed.getStaffPasswordFile());
+            writeCredentials(passwordFile, username, password);
+            log.warn("Seeded {} account '{}' with a generated password. "
+                            + "Credentials written to '{}' - change it and delete the file.",
+                    role, username, passwordFile);
         } else {
-            log.info("Seeded STAFF account '{}'.", seed.getStaffUsername());
+            log.info("Seeded {} account '{}'.", role, username);
         }
     }
 
-    
-
-    private void bootstrapAdmin() {
+    /**
+     * Tài khoản đăng ký sẵn (Google hoặc form đăng ký) sẽ được nâng lên ADMIN nếu
+     * email của nó trùng với {@code ADMIN_EMAIL}.
+     */
+    private void promoteConfiguredAdmin() {
         String adminEmail = appProperties.getAdmin().getEmail();
         if (!StringUtils.hasText(adminEmail)) {
             return;
         }
-        userRepository.findByEmail(adminEmail.trim().toLowerCase()).ifPresent(user -> {
+        userRepository.findByEmail(adminEmail.trim().toLowerCase(Locale.ROOT)).ifPresent(user -> {
             if (user.getRole() != Role.ADMIN) {
                 user.setRole(Role.ADMIN);
                 userRepository.save(user);
@@ -97,14 +121,23 @@ public class DataSeeder implements ApplicationRunner {
         return builder.toString();
     }
 
-    private void writeCredentials(String username, String password) {
+    private void writeCredentials(String passwordFile, String username, String password) {
+        if (!StringUtils.hasText(passwordFile)) {
+            log.warn("No password file configured for account '{}'. "
+                    + "The generated password can not be read back.", username);
+            return;
+        }
         String content = "username=" + username + System.lineSeparator()
                 + "password=" + password + System.lineSeparator();
-        Path path = Path.of(appProperties.getSeed().getStaffPasswordFile());
+        Path path = Path.of(passwordFile);
         try {
+            Path parent = path.toAbsolutePath().getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
             Files.writeString(path, content, StandardCharsets.UTF_8);
         } catch (IOException ex) {
-            log.error("Failed to write staff credentials to '{}': {}", path, ex.getMessage());
+            log.error("Failed to write credentials to '{}': {}", path, ex.getMessage());
         }
     }
 }

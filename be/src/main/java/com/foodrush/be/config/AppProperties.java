@@ -50,7 +50,22 @@ public class AppProperties {
     @Getter
     @Setter
     public static class Admin {
+        /**
+         * Email của tài khoản quản trị. Nếu tài khoản này đã tồn tại thì sẽ được
+         * nâng lên vai trò ADMIN mỗi khi ứng dụng khởi động.
+         */
         private String email;
+
+        /**
+         * Tài khoản quản trị tạo sẵn giống tài khoản nhân viên.
+         */
+        private String username = "admin";
+        private String displayName = "Quản trị Five Star";
+        /**
+         * Để trống thì tự sinh mật khẩu ngẫu nhiên và ghi ra admin-password-file.
+         */
+        private String password;
+        private String passwordFile = "admin-credentials.txt";
     }
 
     @Getter

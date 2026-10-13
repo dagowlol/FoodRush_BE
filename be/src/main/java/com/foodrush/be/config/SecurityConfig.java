@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/oauth2/**",
             "/login/oauth2/**",
             "/login",
-            "/favicon.ico"
+            "/favicon.ico",
+            "/actuator/health"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
